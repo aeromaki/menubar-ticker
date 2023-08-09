@@ -32,13 +32,13 @@ const NSTimeInterval kPollingInterval = 10.0;
 
     self.music = nil;
     self.spotify = nil;
-    
+
     self.statusItem = nil;
     self.statusMenu = nil;
-    
+
     [self.timer invalidate];
     self.timer = nil;
-    
+
     [super dealloc];
 }
 
@@ -61,7 +61,7 @@ const NSTimeInterval kPollingInterval = 10.0;
                                                         selector:@selector(didReceivePlayerNotification:)
                                                             name:@"com.apple.music.playerInfo"
                                                           object:nil];
-    
+
     [[NSDistributedNotificationCenter defaultCenter] addObserver:self
                                                         selector:@selector(didReceivePlayerNotification:)
                                                             name:@"com.spotify.client.PlaybackStateChanged"
@@ -72,19 +72,28 @@ const NSTimeInterval kPollingInterval = 10.0;
 {
     self.music = [SBApplication applicationWithBundleIdentifier:@"com.apple.music"];
     self.spotify = [SBApplication applicationWithBundleIdentifier:@"com.spotify.client"];
-    
+
     self.statusItem = [[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength];
     self.statusItem.menu = self.statusMenu;
     self.statusItem.button.toolTip = @"Menu Bar Ticker";
-    
+
     [self updateTrackInfo];
 }
 
+- (NSString *)truncateString:(NSString *)string toMaxLength:(NSUInteger)maxLength {
+    if (string.length > maxLength) {
+        NSString *truncatedString = [string substringToIndex:maxLength];
+        truncatedString = [truncatedString stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        return [NSString stringWithFormat:@"%@...", truncatedString];
+    } else {
+        return string;
+    }
+}
 
 - (void)updateTrackInfo
 {
     id currentTrack = nil;
-    
+
     if ([self.music isRunning] && [self.music playerState] == MusicEPlSPlaying) {
         currentTrack = [self.music currentTrack];
     } else if ([self.spotify isRunning] && [self.spotify playerState] == SpotifyEPlSPlaying) {
@@ -92,8 +101,8 @@ const NSTimeInterval kPollingInterval = 10.0;
     }
 
     statusItem.button.title = currentTrack
-        ? [NSString stringWithFormat:@"%@ - %@", [currentTrack artist], [currentTrack name]]
-        : @"♫";
+        ? [self truncateString:[NSString stringWithFormat:@"%@ - %@", [currentTrack name], [currentTrack artist]] toMaxLength:40]
+        : @"";
 }
 
 - (void)timerDidFire:(NSTimer *)theTimer
