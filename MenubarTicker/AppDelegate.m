@@ -102,7 +102,7 @@ const NSTimeInterval kPollingInterval = 10.0;
 
     statusItem.button.title = currentTrack
         ? [self truncateString:[NSString stringWithFormat:@"%@ - %@", [currentTrack name], [currentTrack artist]] toMaxLength:40]
-        : @"";
+        : @"No music playing";
 }
 
 - (void)timerDidFire:(NSTimer *)theTimer
